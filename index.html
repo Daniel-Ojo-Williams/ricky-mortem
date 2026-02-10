@@ -44,7 +44,7 @@
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
 
     <script>
-        const token = "BQAhZ2RWE7M9QPUXzJtCz9mGvKDcRZqSAe_4G4PA4Ix_VYgpO6b8bJ6uu1XoH9IJIz1Brm5mGoZJSB9FsUxlvST6v4wP1R_I4GDvXt-WomlO99chsNb_iq-HPcJNLEE5TQm6ZsWx7P02ig7EKuy4RRBW0YPmw4IpwRdJyGsv4pIMnzgaZ0FNBilKZilZFPlTkwmJ-Udmd5Q-Eqp65T56Nmiw-7gMfhH4C2JaacN4_52MZt0w5CUDcyESKPlxJg7v2bKTCELMkNzH"
+        const token = "BQCDQQ-9sTdsp8-xDaNi54IEYK4iNtsrluEh7tbJxbVmIILWY4xk1asFbmoiDhOK8Z1IFNwFa_JmrCvbjZ5Rnl06V81ZougYSpWAFZ_J3l9wd6kfLqM5gRn6BNigzeS9t84GUfkxCl0cp_d-7jEjK3pDFJz0Z43JxlVjaCsUzPcKlkJ_LrW-9psp3ZVz-EvmkfjDWGLxdwLk17GZWb-QcNSFjSSlyo2hp2FqAiJ1itbUtfmI-68zo7H9X-NeGwHDDntf4rffZakw"
         window.onSpotifyWebPlaybackSDKReady = () => {
             const player = new Spotify.Player({
                 name: 'Web Playback SDK Quick Start Player',
@@ -106,7 +106,7 @@
                 });
             }
 
-            player.addListener('player_state_changed', ({ _, _, track_window: { current_track } }) => {
+            player.addListener('player_state_changed', ({ _, duration, track_window: { current_track } }) => {
                 console.log(current_track)
                 if (currentTrack === null) {
                     updatePlayer(current_track);
