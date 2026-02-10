@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">   
+    <title>Rick Morty</title>
+
+</head>
+<body>
+    <div id="container">
+        <h2>Rick & Morty</h2>
+        <div id="main">
+            <div class="another">
+                <div id="character">
+                    <h3>Character Details</h3>
+                    <div class="content">
+                        <p class="name">Name: Blue Footprint Guy</p>
+                        <p class="status">Status: Dead</p>
+                        <p class="species">Species: Human</p>
+                        <p class="gender">Gender: Male</p>
+                    </div>
+                </div>
+                <div class="music">
+                    <div class="player">
+                        <div class="album-image"><img src="https://i.scdn.co/image/ab67616d0000b273682fb725a20b826645c640eb" alt=""></div>
+                        <div class="song-title">Midnight Dreams</div>
+                        <div class="artist">The Wanderers</div>
+                        <div class="controls">
+                            <span class="back" id="previous"><i class="fa-solid fa-backward"></i></span>
+                            <span class="play fa-solid fa-play" id="play"></i></span>
+                            <span class="forward" id="next"><i class="fa-solid fa-forward"></i></span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+
+    <script>
+        const token = "BQDosF36QyvbFPEuPpMUgjZkB1NasPQL4ZAVfYvllthNH8PibrAOoTiHoBdCn5ke2DiIoqoAD-euPBVt-nlAW1Chp0jR_FMuwLJ9NDixkTcb7PA_nPwzYUa7bQm-9chIzA12lyckDz3nKTbz-5HHTjhoi4-yrMYySx10SBHrYbqkhLNUiZxmysiLf013HyVinMVgjGnV8Nk7C2JuGqbo8ohkGLF_7gaVn1pxrlNEr9HgV07msaCXn-3Xb1Go6njWLDP46TkCNSqc"
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => { cb(token); },
+                volume: 1.0
+            });
+
+            async function play(device_id) {
+                
+                await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${device_id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ context_uri: 'spotify:album:49YTYyBoRVoUTl6GaVJRar' }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+            }
+
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+                window.deviceId = device_id;
+            });
+
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
+
+            player.addListener('initialization_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('authentication_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('account_error', ({ message }) => {
+                console.error(message);
+            });
+
+            let currentTrack = null;
+
+            function updatePlayer(track) {
+                const id = Math.floor((Math.random() * 826) + 1);
+                const link = `https://rickandmortyapi.com/api/character/${id}`;
+                fetch(link).then(resp => {
+                    resp.json().then((char) => {
+                        currentTrack = track;   
+                        document.querySelector(".song-title").innerText = track.name;
+                        document.querySelector(".artist").innerText = track.artists.map(a => a.name).join(", ");
+                        document.querySelector(".album-image img").src = char.image;
+                        document.querySelector(".name").innerText = `Name: ${char.name}`;
+                        document.querySelector(".status").innerText = `Status: ${char.status}`;
+                        document.querySelector(".species").innerText = `Species: ${char.species}`;
+                        document.querySelector(".gender").innerText = `Gender: ${char.gender}`;
+
+                        document.getElementById("container").style.backgroundImage = `url(${char.image})`;
+                    })
+                });
+            }
+
+            player.addListener('player_state_changed', ({ _, _, track_window: { current_track } }) => {
+                console.log(current_track)
+                if (currentTrack === null) {
+                    updatePlayer(current_track);
+                } else if (currentTrack.id !== current_track.id) {
+                    updatePlayer(current_track)
+                }
+            })
+
+            player.connect().then(success => {
+                if (success) {
+                    console.log('The web playbakc SDK successfulluy connected to spotify')
+                } else {
+                    console.log('No show')
+                }
+            });
+
+
+            document.getElementById('play').onclick = function() {
+                player.getCurrentState().then(state => {
+                    if (!state) {
+                        play(window.deviceId).then(() => {
+                            document.querySelector(".play").classList.add("fa-pause");
+                            document.querySelector(".play").classList.remove("fa-play");
+                            console.log(document.querySelector(".play").classList)
+                            player.getCurrentState().then(state => {
+                                console.log('current_State', state)
+                            })
+                        });
+                    } else if (state.paused) {
+                        player.resume().then(() => {
+                            document.querySelector(".play").classList.remove("fa-play");
+                            document.querySelector(".play").classList.add("fa-pause");
+                        });
+                    } else {
+                        player.pause().then(() => {
+                            document.querySelector(".play").classList.add("fa-play");
+                            document.querySelector(".play").classList.remove("fa-pause");
+                        });
+                    }
+                });
+            }
+
+
+            document.getElementById('next').onclick = function () {
+                player.nextTrack().then(() => {
+                    console.log('Skipped to next track!');
+                });
+            }
+        }
+
+    </script>
+</body>
+</html>
